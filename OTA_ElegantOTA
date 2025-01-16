@@ -1,0 +1,50 @@
+//simple LED blinkig
+
+#include <WiFi.h>
+#include <WebServer.h>
+#include <ElegantOTA.h>
+
+const char* ssid = "";         // Replace with your WiFi SSID
+const char* password = ""; // Replace with your WiFi Password
+
+WebServer server(80);
+
+const int ledPin = 2; // Onboard LED GPIO 2
+
+void setup() {
+  Serial.begin(115200);
+  
+  // Initialize onboard LED
+  pinMode(ledPin, OUTPUT);
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to Wi-Fi");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  // Start ElegantOTA
+  server.on("/", []() {
+    server.send(200, "text/plain", "Welcome to OTA Update Page");
+  });
+  ElegantOTA.begin(&server);
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop() {
+  // Blink onboard LED
+  digitalWrite(ledPin, HIGH);
+  delay(500);
+  digitalWrite(ledPin, LOW);
+  delay(500);
+  
+
+  // Handle OTA
+  server.handleClient();
+}
